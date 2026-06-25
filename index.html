@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simple Chatbot</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f0f0f0; }
+        .chat-container { max-width: 600px; margin: 30px auto; background: #fff; padding: 20px; border-radius: 8px; }
+        .message { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .user { background: #d1e7dd; }
+        .bot { background: #f1f1f1; }
+        .bot p { margin: 5px 0; }
+        .send-btn { margin-top: 15px; padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        #user-input { width: 100%; padding: 10px; margin-top: 10px; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <h2>Simple Chatbot</h2>
+        <div id="chat-history"></div>
+        <form id="chat-form">
+            <input type="text" id="user-input" placeholder="Type your message..." />
+            <button type="submit" class="send-btn">Send</button>
+        </form>
+    </div>
+    <script>
+        document.getElementById('chat-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var input = document.getElementById('user-input');
+            var message = input.value.trim();
+            if (message === '') return;
+
+            var chatHistory = document.getElementById('chat-history');
+            
+            var msg = document.createElement('div');
+            msg.classList.add('message', 'user');
+            msg.textContent = message;
+            chatHistory.appendChild(msg);
+
+            var botResponse = document.createElement('div');
+            botResponse.classList.add('message', 'bot');
+            botResponse.innerHTML = "Thinking...";
+            chatHistory.appendChild(botResponse);
+
+            fetch('http://localhost:5000/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ message: message })
+            }).then(response => response.json())
+                .then(data => {
+                    botResponse.innerHTML = marked.parse(data.response);
+                })
+                .catch(error => {
+                    botResponse.textContent = "Error: " + error;
+                });
+
+            input.value = '';
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        });
+    </script>
+</body>
+</html>
